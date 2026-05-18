@@ -7,6 +7,8 @@ import joblib
 import dagshub
 import mlflow
 import mlflow.sklearn
+from dotenv import load_dotenv
+load_dotenv()
 
 # ============================================================
 # LOAD ENV VARIABLES

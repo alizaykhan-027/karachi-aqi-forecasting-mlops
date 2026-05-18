@@ -4,6 +4,8 @@ import pandas as pd
 
 from supabase import create_client
 from sklearn.ensemble import ExtraTreesRegressor
+from dotenv import load_dotenv
+load_dotenv()
 
 # ============================================================
 # ENV

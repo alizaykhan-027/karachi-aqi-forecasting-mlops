@@ -4,6 +4,8 @@ import numpy as np
 import pandas as pd
 
 from supabase import create_client
+from dotenv import load_dotenv
+load_dotenv()
 
 # ============================================================
 # ENV VARIABLES

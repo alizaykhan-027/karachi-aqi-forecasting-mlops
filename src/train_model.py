@@ -7,8 +7,12 @@ import joblib
 import warnings
 import numpy as np
 import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.base import clone
+
 
 from dotenv import load_dotenv
+load_dotenv()
 from supabase import create_client
 
 from sklearn.ensemble import (
@@ -365,7 +369,7 @@ for model_name, base_model in model_configs.items():
             1.0
         )
 
-        model = base_model
+        model = clone(base_model)
 
         model.fit(
 
@@ -430,24 +434,39 @@ print("\n================ FINAL RESULTS ================\n")
 print(results_df)
 
 # =========================================================
-# SAVE BEST EXTRA TREES MODELS
+# SAVE BEST MODELS AUTOMATICALLY
 # =========================================================
 
 os.makedirs("models", exist_ok=True)
 
-joblib.dump(
-    trained_models["ExtraTrees"][0],
-    "models/best_model_24h.pkl"
-)
+horizons = ["24h", "48h", "72h"]
 
-joblib.dump(
-    trained_models["ExtraTrees"][1],
-    "models/best_model_48h.pkl"
-)
+for horizon_index, horizon_name in enumerate(horizons):
 
-joblib.dump(
-    trained_models["ExtraTrees"][2],
-    "models/best_model_72h.pkl"
-)
+    horizon_results = results_df[
+        results_df["Horizon"] == horizon_name
+    ]
 
-print("\n✅ Best models saved successfully")
+    best_row = horizon_results.loc[
+        horizon_results["RMSE"].idxmin()
+    ]
+
+    best_model_name = best_row["Model"]
+
+    best_model = trained_models[
+        best_model_name
+    ][horizon_index]
+
+    save_path = f"models/best_model_{horizon_name}.pkl"
+
+    joblib.dump(
+        best_model,
+        save_path
+    )
+
+    print(
+        f"\n✅ Saved Best {horizon_name} Model: "
+        f"{best_model_name}"
+    )
+
+print("\n✅ All best models saved successfully")

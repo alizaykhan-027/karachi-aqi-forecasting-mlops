@@ -2,6 +2,8 @@ import os
 import time
 import numpy as np
 import pandas as pd
+from dotenv import load_dotenv
+load_dotenv()
 
 from supabase import create_client
 from dotenv import load_dotenv

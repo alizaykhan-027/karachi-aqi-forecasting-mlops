@@ -11,31 +11,32 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+
     steps:
 
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-    - name: Set Up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-    - name: Install Dependencies
-      run: |
-        pip install -r requirements.txt
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt
 
-    - name: Run Data Ingestion
-      run: python src/data_ingestion.py
+      - name: Run Data Ingestion
+        run: python src/data_ingestion.py
 
-    - name: Run Feature Engineering
-      run: python src/feature_engineering.py
+      - name: Run Feature Engineering
+        run: python src/feature_engineering.py
 
-    - name: Upload Feature Store
-      run: python src/upload_to_supabase.py
+      - name: Upload Feature Store
+        run: python src/upload_to_supabase.py
 
-    - name: Run Predictions
-      run: python src/predict.py
-      env:
-        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-        SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+      - name: Run Predictions
+        run: python src/predict.py

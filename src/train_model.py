@@ -61,7 +61,8 @@ response = (
     supabase
     .table("aqi_features")
     .select("*")
-    .limit(5000)
+    .order("timestamp", desc=True)
+    .limit(1000)
     .execute()
 )
 

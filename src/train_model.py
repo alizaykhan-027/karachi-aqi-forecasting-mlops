@@ -62,7 +62,7 @@ response = (
     .table("aqi_features")
     .select("*")
     .order("timestamp", desc=True)
-    .limit(1000)
+    .limit(10000)
     .execute()
 )
 

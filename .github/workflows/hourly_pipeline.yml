@@ -36,10 +36,13 @@ jobs:
         run: python src/feature_engineering.py
 
       - name: Train Models
-        run: python src/model_training.py
+        run: python src/train_model.py
 
       - name: Upload Feature Store
         run: python src/upload_to_supabase.py
+
+      - name: Check Saved Models
+        run: ls -R models
 
       - name: Run Predictions
         run: python src/predict.py

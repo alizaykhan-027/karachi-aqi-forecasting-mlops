@@ -51,19 +51,23 @@ supabase = create_client(
 
 print("✅ Supabase connected")
 
-print("\nTesting Supabase connection...")
+# =========================================================
+# FETCH DATA FROM SUPABASE
+# =========================================================
+
+print("\nFetching AQI feature dataset...")
 
 response = (
     supabase
     .table("aqi_features")
-    .select("timestamp", count="exact")
-    .limit(1)
+    .select("*")
+    .limit(5000)
     .execute()
 )
 
-print("Rows in table:", response.count)
-print("Test query worked")
-exit()
+all_data = response.data
+
+print(f"Collected {len(all_data)} rows")
 
 # =========================================================
 # DATAFRAME

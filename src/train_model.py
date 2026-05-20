@@ -1,5 +1,6 @@
 # =========================================================
-# AQI MODEL TRAINING PIPELINE (PRODUCTION VERSION)
+# AQI MODEL TRAINING PIPELINE (PART 1)
+# LOAD DATA + MERGE BUFFER + PREP DATA
 # =========================================================
 
 import os
@@ -51,7 +52,6 @@ supabase = create_client(
 
 print("✅ Supabase connected")
 
-
 # =========================================================
 # HELPER FUNCTIONS
 # =========================================================
@@ -92,49 +92,64 @@ def save_model_version(
     }).execute()
 
 
+def fetch_all_rows(table_name):
+    all_data = []
+    offset = 0
+    batch_size = 1000
+
+    while True:
+        response = (
+            supabase
+            .table(table_name)
+            .select("*")
+            .range(offset, offset + batch_size - 1)
+            .execute()
+        )
+
+        batch = response.data
+
+        if not batch:
+            break
+
+        all_data.extend(batch)
+        offset += batch_size
+
+        print(f"{table_name}: collected {len(all_data)} rows")
+
+        if len(batch) < batch_size:
+            break
+
+    return all_data
+
+
 # =========================================================
-# FETCH DATA FROM SUPABASE
+# FETCH HISTORICAL + BUFFER DATA
 # =========================================================
 
-print("\nFetching AQI feature dataset...")
+print("\nFetching historical AQI data...")
+historical_data = fetch_all_rows("aqi_features")
 
-all_data = []
-batch_size = 1000
-start = 0
+print("\nFetching buffer AQI data...")
+buffer_data = fetch_all_rows("new_daily_data")
 
-while True:
-    response = (
-        supabase
-        .table("aqi_features")
-        .select("*")
-        .range(start, start + batch_size - 1)
-        .execute()
-    )
-
-    batch = response.data
-
-    if not batch:
-        break
-
-    all_data.extend(batch)
-
-    print(f"Collected {len(all_data)} rows")
-
-    if len(batch) < batch_size:
-        break
-
-    start += batch_size
-
-if not all_data:
+if not historical_data and not buffer_data:
     raise ValueError("No data returned from Supabase")
 
-print(f"\n✅ Total rows fetched: {len(all_data)}")
-
 # =========================================================
-# DATAFRAME PREP
+# MERGE DATA
 # =========================================================
 
-df_raw = pd.DataFrame(all_data)
+df_historical = pd.DataFrame(historical_data) if historical_data else pd.DataFrame()
+df_buffer = pd.DataFrame(buffer_data) if buffer_data else pd.DataFrame()
+
+df_raw = pd.concat(
+    [df_historical, df_buffer],
+    ignore_index=True
+)
+
+# =========================================================
+# DATAFRAME CLEANING
+# =========================================================
 
 df_raw["timestamp"] = pd.to_datetime(
     df_raw["timestamp"],
@@ -157,7 +172,7 @@ df_raw = df_raw.replace(
     np.nan
 )
 
-print(f"\n✅ Loaded {len(df_raw)} rows")
+print(f"\n✅ Total merged rows: {len(df_raw)}")
 
 # =========================================================
 # REQUIRED TARGETS
@@ -337,7 +352,6 @@ model_configs = {
         verbose=-1
     )
 }
-
 # =========================================================
 # TRAIN MODELS
 # =========================================================
@@ -481,10 +495,12 @@ for horizon_index, horizon_name in enumerate(horizons):
             save_path
         )
 
+        # remove old production flag
         supabase.table("model_performance").update({
             "is_production": False
         }).eq("horizon", horizon_name).execute()
 
+        # insert new production model
         supabase.table("model_performance").insert({
             "horizon": horizon_name,
             "model_name": new_model_name,
@@ -498,5 +514,52 @@ for horizon_index, horizon_name in enumerate(horizons):
 
     else:
         print(f"⏭ Kept old production model for {horizon_name}")
+
+# =========================================================
+# MERGE BUFFER INTO HISTORICAL TABLE
+# =========================================================
+
+print("\nMerging buffer data into aqi_features...")
+
+if buffer_data:
+
+    # remove duplicate timestamps already in historical
+    historical_timestamps = set(df_historical["timestamp"].astype(str)) if not df_historical.empty else set()
+
+    rows_to_insert = []
+
+    for row in buffer_data:
+        row_timestamp = str(row["timestamp"])
+
+        if row_timestamp not in historical_timestamps:
+            cleaned_row = dict(row)
+
+            # remove id so Supabase auto-generates
+            if "id" in cleaned_row:
+                del cleaned_row["id"]
+
+            rows_to_insert.append(cleaned_row)
+
+    if rows_to_insert:
+        batch_size = 500
+
+        for i in range(0, len(rows_to_insert), batch_size):
+            batch = rows_to_insert[i:i+batch_size]
+
+            supabase.table("aqi_features").insert(batch).execute()
+
+        print(f"✅ Inserted {len(rows_to_insert)} new rows into aqi_features")
+    else:
+        print("No new rows to merge")
+
+# =========================================================
+# CLEAN BUFFER TABLE
+# =========================================================
+
+print("\nCleaning new_daily_data buffer...")
+
+supabase.table("new_daily_data").delete().neq("timestamp", "").execute()
+
+print("✅ Buffer table cleaned")
 
 print("\n✅ Daily AQI training pipeline completed successfully")

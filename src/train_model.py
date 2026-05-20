@@ -55,37 +55,19 @@ print("✅ Supabase connected")
 # FETCH DATA FROM SUPABASE
 # =========================================================
 
-# =========================================================
-# FETCH DATA FROM SUPABASE
-# =========================================================
-
-all_data = []
-
-page_size = 200
-start = 0
-
 print("\nFetching AQI feature dataset...")
 
-while True:
+response = (
+    supabase
+    .table("aqi_features")
+    .select("*")
+    .limit(1000)
+    .execute()
+)
 
-    response = (
-        supabase
-        .table("aqi_features")
-        .select("*")
-        .range(start, start + page_size - 1)
-        .execute()
-    )
+all_data = response.data
 
-    batch = response.data
-
-    if not batch:
-        break
-
-    all_data.extend(batch)
-
-    print(f"Collected {len(all_data)} rows")
-
-    start += page_size
+print(f"Collected {len(all_data)} rows")
 
 # =========================================================
 # DATAFRAME

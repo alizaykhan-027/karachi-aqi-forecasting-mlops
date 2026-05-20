@@ -7,12 +7,9 @@ import joblib
 import warnings
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import MinMaxScaler
 from sklearn.base import clone
 
-
 from dotenv import load_dotenv
-load_dotenv()
 from supabase import create_client
 
 from sklearn.ensemble import (
@@ -57,16 +54,19 @@ print("✅ Supabase connected")
 
 print("\nFetching AQI feature dataset...")
 
+# No ORDER BY (avoids timeout)
 response = (
     supabase
     .table("aqi_features")
     .select("*")
-    .order("timestamp", desc=True)
     .limit(10000)
     .execute()
 )
 
 all_data = response.data
+
+if not all_data:
+    raise ValueError("No data returned from Supabase")
 
 print(f"Collected {len(all_data)} rows")
 
@@ -81,8 +81,14 @@ df_raw = pd.DataFrame(all_data)
 # =========================================================
 
 df_raw["timestamp"] = pd.to_datetime(
-    df_raw["timestamp"]
+    df_raw["timestamp"],
+    errors="coerce"
 )
+
+# Remove bad timestamps
+df_raw = df_raw.dropna(
+    subset=["timestamp"]
+).reset_index(drop=True)
 
 # =========================================================
 # SORT
@@ -139,7 +145,7 @@ priority_features = [
     "month_sin",
     "month_cos",
 
-    # TIME FLAGS
+    # FLAGS
     "is_weekend",
     "season",
 
@@ -147,10 +153,8 @@ priority_features = [
     "aqi_lag_1h",
     "aqi_lag_6h",
     "aqi_lag_24h",
-
     "aqi_rolling_avg_6h",
     "aqi_rolling_avg_24h",
-
     "aqi_change_rate_24h",
 
     # PM2.5 LAGS
@@ -162,7 +166,7 @@ priority_features = [
     "pm25_lag_24",
     "pm25_lag_48",
 
-    # ROLLING MEANS
+    # ROLLING
     "pm25_roll_mean_3",
     "pm25_roll_mean_6",
     "pm25_roll_mean_12",
@@ -199,15 +203,12 @@ priority_features = [
 # =========================================================
 
 optional_cols = [
-
     "pm10",
     "pm_ratio",
-
     "carbon_monoxide",
     "nitrogen_dioxide",
     "sulphur_dioxide",
     "ozone",
-
     "temperature",
     "humidity",
     "wind_speed",
@@ -215,7 +216,6 @@ optional_cols = [
 ]
 
 for col in optional_cols:
-
     if col in df_final.columns:
         priority_features.append(col)
 
@@ -224,7 +224,6 @@ for col in optional_cols:
 # =========================================================
 
 priority_features = [
-
     col for col in priority_features
     if col in df_final.columns
 ]
@@ -250,6 +249,9 @@ all_needed = priority_features + targets
 df_final = df_final.dropna(
     subset=all_needed
 ).reset_index(drop=True)
+
+if len(df_final) < 500:
+    raise ValueError("Dataset too small after cleaning")
 
 print("\nFinal Dataset Shape:", df_final.shape)
 
@@ -285,8 +287,7 @@ print("Test Shape :", X_test.shape)
 model_configs = {
 
     "ExtraTrees": ExtraTreesRegressor(
-
-        n_estimators=800,
+        n_estimators=400,
         max_depth=14,
         min_samples_leaf=2,
         min_samples_split=4,
@@ -296,8 +297,7 @@ model_configs = {
     ),
 
     "RandomForest": RandomForestRegressor(
-
-        n_estimators=600,
+        n_estimators=300,
         max_depth=16,
         min_samples_leaf=2,
         min_samples_split=4,
@@ -307,8 +307,7 @@ model_configs = {
     ),
 
     "XGBoost": XGBRegressor(
-
-        n_estimators=500,
+        n_estimators=250,
         learning_rate=0.03,
         max_depth=6,
         subsample=0.8,
@@ -319,8 +318,7 @@ model_configs = {
     ),
 
     "LightGBM": LGBMRegressor(
-
-        n_estimators=500,
+        n_estimators=250,
         learning_rate=0.03,
         max_depth=6,
         subsample=0.8,
@@ -335,7 +333,6 @@ model_configs = {
 # =========================================================
 
 results = []
-
 trained_models = {}
 
 for model_name, base_model in model_configs.items():
@@ -343,13 +340,11 @@ for model_name, base_model in model_configs.items():
     print(f"\n================ {model_name.upper()} =================")
 
     predictions = []
-
     horizon_models = []
 
     for i in range(3):
 
         sample_weights = np.where(
-
             y_train.iloc[:, i] < 35,
             2.5,
             1.0
@@ -358,7 +353,6 @@ for model_name, base_model in model_configs.items():
         model = clone(base_model)
 
         model.fit(
-
             X_train,
             y_train.iloc[:, i],
             sample_weight=sample_weights
@@ -367,11 +361,9 @@ for model_name, base_model in model_configs.items():
         preds = model.predict(X_test)
 
         predictions.append(preds)
-
         horizon_models.append(model)
 
     predictions = np.column_stack(predictions)
-
     trained_models[model_name] = horizon_models
 
     horizons = ["24h", "48h", "72h"]
@@ -396,7 +388,6 @@ for model_name, base_model in model_configs.items():
         )
 
         results.append({
-
             "Model": model_name,
             "Horizon": h,
             "MAE": round(mae, 3),
@@ -416,11 +407,10 @@ for model_name, base_model in model_configs.items():
 results_df = pd.DataFrame(results)
 
 print("\n================ FINAL RESULTS ================\n")
-
 print(results_df)
 
 # =========================================================
-# SAVE BEST MODELS AUTOMATICALLY
+# SAVE BEST MODELS
 # =========================================================
 
 os.makedirs("models", exist_ok=True)

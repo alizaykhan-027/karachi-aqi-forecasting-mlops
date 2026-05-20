@@ -1,5 +1,5 @@
 # =========================================================
-# AQI MODEL TRAINING PIPELINE
+# AQI MODEL TRAINING PIPELINE (PRODUCTION VERSION)
 # =========================================================
 
 import os
@@ -37,6 +37,9 @@ load_dotenv()
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
+if not SUPABASE_URL or not SUPABASE_KEY:
+    raise ValueError("Missing Supabase credentials")
+
 # =========================================================
 # SUPABASE CONNECTION
 # =========================================================
@@ -47,6 +50,51 @@ supabase = create_client(
 )
 
 print("✅ Supabase connected")
+
+
+# =========================================================
+# HELPER FUNCTIONS
+# =========================================================
+
+def get_previous_performance(horizon):
+    response = (
+        supabase
+        .table("model_performance")
+        .select("*")
+        .eq("horizon", horizon)
+        .eq("is_production", True)
+        .execute()
+    )
+
+    if response.data:
+        return response.data[0]
+
+    return None
+
+
+def save_model_version(
+    version_name,
+    horizon,
+    model_name,
+    mae,
+    rmse,
+    r2,
+    promoted
+):
+    supabase.table("model_versions").insert({
+        "version_name": version_name,
+        "horizon": horizon,
+        "model_name": model_name,
+        "mae": float(mae),
+        "rmse": float(rmse),
+        "r2": float(r2),
+        "promoted": promoted
+    }).execute()
+
+
+# =========================================================
+# FETCH DATA FROM SUPABASE
+# =========================================================
 
 print("\nFetching AQI feature dataset...")
 
@@ -83,28 +131,19 @@ if not all_data:
 print(f"\n✅ Total rows fetched: {len(all_data)}")
 
 # =========================================================
-# DATAFRAME
+# DATAFRAME PREP
 # =========================================================
 
 df_raw = pd.DataFrame(all_data)
-
-# =========================================================
-# DATETIME
-# =========================================================
 
 df_raw["timestamp"] = pd.to_datetime(
     df_raw["timestamp"],
     errors="coerce"
 )
 
-# Remove bad timestamps
 df_raw = df_raw.dropna(
     subset=["timestamp"]
 ).reset_index(drop=True)
-
-# =========================================================
-# SORT
-# =========================================================
 
 df_raw = (
     df_raw
@@ -112,10 +151,6 @@ df_raw = (
     .drop_duplicates(subset=["timestamp"])
     .reset_index(drop=True)
 )
-
-# =========================================================
-# REMOVE INVALID VALUES
-# =========================================================
 
 df_raw = df_raw.replace(
     [np.inf, -np.inf],
@@ -143,13 +178,10 @@ df_final = df_raw.dropna(
 # =========================================================
 
 priority_features = [
-
-    # BASIC
     "pm2_5",
     "us_aqi",
     "pm25_log",
 
-    # TIME
     "hour_sin",
     "hour_cos",
     "day_sin",
@@ -157,11 +189,9 @@ priority_features = [
     "month_sin",
     "month_cos",
 
-    # FLAGS
     "is_weekend",
     "season",
 
-    # AQI FEATURES
     "aqi_lag_1h",
     "aqi_lag_6h",
     "aqi_lag_24h",
@@ -169,7 +199,6 @@ priority_features = [
     "aqi_rolling_avg_24h",
     "aqi_change_rate_24h",
 
-    # PM2.5 LAGS
     "pm25_lag_1",
     "pm25_lag_2",
     "pm25_lag_3",
@@ -178,41 +207,26 @@ priority_features = [
     "pm25_lag_24",
     "pm25_lag_48",
 
-    # ROLLING
     "pm25_roll_mean_3",
     "pm25_roll_mean_6",
     "pm25_roll_mean_12",
     "pm25_roll_mean_24",
 
-    # STD
     "pm25_roll_std_24",
-
-    # MIN/MAX
     "pm25_roll_min_24",
     "pm25_roll_max_24",
-
-    # MEDIAN
     "pm25_median_24",
 
-    # EMA
     "pm25_ema_3",
     "pm25_ema_6",
     "pm25_ema_12",
     "pm25_ema_24",
 
-    # VOLATILITY
     "pm25_volatility_24",
-
-    # CUMULATIVE
     "pm25_cumulative_24",
 
-    # FLAGS
     "high_pollution_flag"
 ]
-
-# =========================================================
-# OPTIONAL FEATURES
-# =========================================================
 
 optional_cols = [
     "pm10",
@@ -231,10 +245,6 @@ for col in optional_cols:
     if col in df_final.columns:
         priority_features.append(col)
 
-# =========================================================
-# KEEP AVAILABLE FEATURES ONLY
-# =========================================================
-
 priority_features = [
     col for col in priority_features
     if col in df_final.columns
@@ -242,19 +252,11 @@ priority_features = [
 
 print("\nTotal Features:", len(priority_features))
 
-# =========================================================
-# TARGETS
-# =========================================================
-
 targets = [
     "target_24h",
     "target_48h",
     "target_72h"
 ]
-
-# =========================================================
-# FINAL CLEANING
-# =========================================================
 
 all_needed = priority_features + targets
 
@@ -268,15 +270,11 @@ if len(df_final) < 500:
 print("\nFinal Dataset Shape:", df_final.shape)
 
 # =========================================================
-# INPUTS / TARGETS
+# TRAIN / TEST SPLIT
 # =========================================================
 
 X = df_final[priority_features]
 y = df_final[targets]
-
-# =========================================================
-# TIME SERIES SPLIT
-# =========================================================
 
 n = len(df_final)
 
@@ -347,6 +345,8 @@ model_configs = {
 results = []
 trained_models = {}
 
+horizons = ["24h", "48h", "72h"]
+
 for model_name, base_model in model_configs.items():
 
     print(f"\n================ {model_name.upper()} =================")
@@ -377,8 +377,6 @@ for model_name, base_model in model_configs.items():
 
     predictions = np.column_stack(predictions)
     trained_models[model_name] = horizon_models
-
-    horizons = ["24h", "48h", "72h"]
 
     for i, h in enumerate(horizons):
 
@@ -422,12 +420,12 @@ print("\n================ FINAL RESULTS ================\n")
 print(results_df)
 
 # =========================================================
-# SAVE BEST MODELS
+# SAVE / COMPARE MODELS
 # =========================================================
 
 os.makedirs("models", exist_ok=True)
 
-horizons = ["24h", "48h", "72h"]
+version_name = pd.Timestamp.now().strftime("aqi_model_%Y%m%d_%H%M%S")
 
 for horizon_index, horizon_name in enumerate(horizons):
 
@@ -439,22 +437,66 @@ for horizon_index, horizon_name in enumerate(horizons):
         horizon_results["RMSE"].idxmin()
     ]
 
-    best_model_name = best_row["Model"]
+    new_model_name = best_row["Model"]
+    new_mae = best_row["MAE"]
+    new_rmse = best_row["RMSE"]
+    new_r2 = best_row["R2"]
 
-    best_model = trained_models[
-        best_model_name
-    ][horizon_index]
+    previous = get_previous_performance(horizon_name)
 
-    save_path = f"models/best_model_{horizon_name}.pkl"
+    promote = False
 
-    joblib.dump(
-        best_model,
-        save_path
+    if previous is None:
+        print(f"\nNo previous production model for {horizon_name}")
+        promote = True
+
+    elif new_rmse < previous["rmse"]:
+        print(f"\nNew model improved for {horizon_name}")
+        promote = True
+
+    else:
+        print(f"\nOld production model remains for {horizon_name}")
+        promote = False
+
+    save_model_version(
+        version_name=version_name,
+        horizon=horizon_name,
+        model_name=new_model_name,
+        mae=new_mae,
+        rmse=new_rmse,
+        r2=new_r2,
+        promoted=promote
     )
 
-    print(
-        f"\n✅ Saved Best {horizon_name} Model: "
-        f"{best_model_name}"
-    )
+    if promote:
 
-print("\n✅ All best models saved successfully")
+        best_model = trained_models[
+            new_model_name
+        ][horizon_index]
+
+        save_path = f"models/best_model_{horizon_name}.pkl"
+
+        joblib.dump(
+            best_model,
+            save_path
+        )
+
+        supabase.table("model_performance").update({
+            "is_production": False
+        }).eq("horizon", horizon_name).execute()
+
+        supabase.table("model_performance").insert({
+            "horizon": horizon_name,
+            "model_name": new_model_name,
+            "mae": float(new_mae),
+            "rmse": float(new_rmse),
+            "r2": float(new_r2),
+            "is_production": True
+        }).execute()
+
+        print(f"✅ Promoted new model for {horizon_name}")
+
+    else:
+        print(f"⏭ Kept old production model for {horizon_name}")
+
+print("\n✅ Daily AQI training pipeline completed successfully")

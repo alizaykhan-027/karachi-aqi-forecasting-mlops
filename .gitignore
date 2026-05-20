@@ -6,9 +6,10 @@ __pycache__/
 .env
 venv/
 
-# Models
-models/*.pkl
-
+models/*
+!models/best_model_24h.pkl
+!models/best_model_48h.pkl
+!models/best_model_72h.pkl
 # Data
 data/raw/*
 data/processed/*

@@ -23,8 +23,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install Dependencies
-        run: |
-          pip install -r requirements.txt
+        run: pip install -r requirements.txt
 
       - name: Create Models Folder
         run: mkdir -p models
@@ -38,11 +37,14 @@ jobs:
       - name: Train Models
         run: python src/train_model.py
 
+      - name: Check Saved Models
+        run: |
+          pwd
+          ls -la
+          ls -la models || echo "Models folder empty"
+
       - name: Upload Feature Store
         run: python src/upload_to_supabase.py
-
-      - name: Check Saved Models
-        run: ls -R models
 
       - name: Run Predictions
         run: python src/predict.py

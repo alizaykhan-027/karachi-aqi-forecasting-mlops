@@ -1,4 +1,7 @@
 name: Daily Training Pipeline
+concurrency:
+  group: daily-training
+  cancel-in-progress: true
 
 on:
   schedule:

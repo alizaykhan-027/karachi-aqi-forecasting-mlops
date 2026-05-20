@@ -48,27 +48,39 @@ supabase = create_client(
 
 print("✅ Supabase connected")
 
-# =========================================================
-# FETCH DATA FROM SUPABASE
-# =========================================================
-
 print("\nFetching AQI feature dataset...")
 
-# No ORDER BY (avoids timeout)
-response = (
-    supabase
-    .table("aqi_features")
-    .select("*")
-    .limit(10000)
-    .execute()
-)
+all_data = []
+batch_size = 1000
+start = 0
 
-all_data = response.data
+while True:
+    response = (
+        supabase
+        .table("aqi_features")
+        .select("*")
+        .range(start, start + batch_size - 1)
+        .execute()
+    )
+
+    batch = response.data
+
+    if not batch:
+        break
+
+    all_data.extend(batch)
+
+    print(f"Collected {len(all_data)} rows")
+
+    if len(batch) < batch_size:
+        break
+
+    start += batch_size
 
 if not all_data:
     raise ValueError("No data returned from Supabase")
 
-print(f"Collected {len(all_data)} rows")
+print(f"\n✅ Total rows fetched: {len(all_data)}")
 
 # =========================================================
 # DATAFRAME

@@ -524,33 +524,53 @@ print("\nMerging buffer data into aqi_features...")
 if buffer_data:
 
     # remove duplicate timestamps already in historical
-    historical_timestamps = set(df_historical["timestamp"].astype(str)) if not df_historical.empty else set()
+    historical_timestamps = set(
+        df_historical["timestamp"].astype(str)
+    ) if not df_historical.empty else set()
 
     rows_to_insert = []
 
     for row in buffer_data:
+
+        # skip bad timestamps
+        if not row.get("timestamp"):
+            continue
+
         row_timestamp = str(row["timestamp"])
 
         if row_timestamp not in historical_timestamps:
+
             cleaned_row = dict(row)
 
             # remove id so Supabase auto-generates
-            if "id" in cleaned_row:
-                del cleaned_row["id"]
+            cleaned_row.pop("id", None)
+
+            # remove empty values that break postgres
+            for key, value in cleaned_row.items():
+                if value == "":
+                    cleaned_row[key] = None
 
             rows_to_insert.append(cleaned_row)
 
     if rows_to_insert:
+
         batch_size = 500
 
         for i in range(0, len(rows_to_insert), batch_size):
             batch = rows_to_insert[i:i+batch_size]
-
             supabase.table("aqi_features").insert(batch).execute()
 
         print(f"✅ Inserted {len(rows_to_insert)} new rows into aqi_features")
+
     else:
         print("No new rows to merge")
+
+else:
+    print("No buffer data found")
+
+# =========================================================
+# CLEAN BUFFER TABLE
+# =========================================================
 
 # =========================================================
 # CLEAN BUFFER TABLE
@@ -558,7 +578,7 @@ if buffer_data:
 
 print("\nCleaning new_daily_data buffer...")
 
-supabase.table("new_daily_data").delete().neq("timestamp", "").execute()
+supabase.table("new_daily_data").delete().gte("id", 0).execute()
 
 print("✅ Buffer table cleaned")
 

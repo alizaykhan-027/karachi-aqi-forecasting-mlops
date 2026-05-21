@@ -48,7 +48,6 @@ def engineer_aqi_features(df):
 
     # =========================================================================
     # SORT BY TIME
-    # IMPORTANT FOR TIME SERIES
     # =========================================================================
 
     df["timestamp"] = pd.to_datetime(df["timestamp"])
@@ -78,11 +77,8 @@ def engineer_aqi_features(df):
     # =========================================================================
 
     df["hour_of_day"] = df["timestamp"].dt.hour
-
     df["day_of_week"] = df["timestamp"].dt.dayofweek
-
     df["month_of_year"] = df["timestamp"].dt.month
-
     df["day_of_month"] = df["timestamp"].dt.day
 
     df["week_of_year"] = (
@@ -104,13 +100,10 @@ def engineer_aqi_features(df):
 
         if month in [12, 1, 2]:
             return 0
-
         elif month in [3, 4, 5]:
             return 1
-
         elif month in [6, 7, 8]:
             return 2
-
         else:
             return 3
 
@@ -158,27 +151,15 @@ def engineer_aqi_features(df):
         )
 
         df["wind_x"] = np.cos(radians)
-
         df["wind_y"] = np.sin(radians)
 
     # =========================================================================
     # AQI LAG FEATURES
     # =========================================================================
 
-    df["aqi_lag_1h"] = (
-        df["us_aqi"]
-        .shift(1)
-    )
-
-    df["aqi_lag_6h"] = (
-        df["us_aqi"]
-        .shift(6)
-    )
-
-    df["aqi_lag_24h"] = (
-        df["us_aqi"]
-        .shift(24)
-    )
+    df["aqi_lag_1h"] = df["us_aqi"].shift(1)
+    df["aqi_lag_6h"] = df["us_aqi"].shift(6)
+    df["aqi_lag_24h"] = df["us_aqi"].shift(24)
 
     # =========================================================================
     # AQI ROLLING FEATURES
@@ -214,7 +195,6 @@ def engineer_aqi_features(df):
     lag_windows = [1, 2, 3, 6, 12, 24, 48]
 
     for lag in lag_windows:
-
         df[f"pm25_lag_{lag}"] = (
             df["pm2_5"]
             .shift(lag)
@@ -227,7 +207,6 @@ def engineer_aqi_features(df):
     if "pm10" in df.columns:
 
         for lag in [6, 24]:
-
             df[f"pm10_lag_{lag}"] = (
                 df["pm10"]
                 .shift(lag)
@@ -239,7 +218,7 @@ def engineer_aqi_features(df):
         )
 
     # =========================================================================
-    # ROLLING MEAN FEATURES
+    # ROLLING FEATURES
     # =========================================================================
 
     rolling_windows = [3, 6, 12, 24]
@@ -247,61 +226,40 @@ def engineer_aqi_features(df):
     for w in rolling_windows:
 
         df[f"pm25_roll_mean_{w}"] = (
-
             df["pm2_5"]
             .shift(1)
             .rolling(w)
             .mean()
         )
 
-    # =========================================================================
-    # ROLLING STD
-    # =========================================================================
-
     for w in [6, 12, 24]:
 
         df[f"pm25_roll_std_{w}"] = (
-
             df["pm2_5"]
             .shift(1)
             .rolling(w)
             .std()
         )
 
-    # =========================================================================
-    # ROLLING MIN
-    # =========================================================================
-
     for w in [6, 24]:
 
         df[f"pm25_roll_min_{w}"] = (
-
             df["pm2_5"]
             .shift(1)
             .rolling(w)
             .min()
         )
 
-    # =========================================================================
-    # ROLLING MAX
-    # =========================================================================
-
     for w in [3, 6, 24]:
 
         df[f"pm25_roll_max_{w}"] = (
-
             df["pm2_5"]
             .shift(1)
             .rolling(w)
             .max()
         )
 
-    # =========================================================================
-    # ROLLING MEDIAN
-    # =========================================================================
-
     df["pm25_median_24"] = (
-
         df["pm2_5"]
         .shift(1)
         .rolling(24)
@@ -315,43 +273,27 @@ def engineer_aqi_features(df):
     for span in [3, 6, 12, 24]:
 
         df[f"pm25_ema_{span}"] = (
-
             df["pm2_5"]
             .shift(1)
             .ewm(span=span, adjust=False)
             .mean()
         )
 
-    # =========================================================================
-    # EWM STD
-    # =========================================================================
-
     df["pm25_ewm_std_24"] = (
-
         df["pm2_5"]
         .shift(1)
         .ewm(span=24)
         .std()
     )
 
-    # =========================================================================
-    # VOLATILITY
-    # =========================================================================
-
     df["pm25_volatility_24"] = (
-
         df["pm2_5"]
         .shift(1)
         .rolling(24)
         .std()
     )
 
-    # =========================================================================
-    # CUMULATIVE POLLUTION
-    # =========================================================================
-
     df["pm25_cumulative_24"] = (
-
         df["pm2_5"]
         .shift(1)
         .rolling(24)
@@ -359,11 +301,10 @@ def engineer_aqi_features(df):
     )
 
     # =========================================================================
-    # POLLUTION SPIKE
+    # POLLUTION FLAGS
     # =========================================================================
 
     df["pollution_spike"] = (
-
         df["pm2_5"] >
         (
             df["pm2_5"]
@@ -372,28 +313,21 @@ def engineer_aqi_features(df):
             .mean()
             * 1.5
         )
-
     ).astype(int)
-
-    # =========================================================================
-    # HIGH POLLUTION FLAG
-    # =========================================================================
 
     df["high_pollution_flag"] = (
         df["pm2_5"] > 35
     ).astype(int)
 
     # =========================================================================
-    # OPTIONAL WEATHER FEATURES
+    # WEATHER FEATURES
     # =========================================================================
 
     weather_cols = [
-
         "temperature",
         "humidity",
         "pressure",
         "wind_speed",
-
         "carbon_monoxide",
         "nitrogen_dioxide",
         "sulphur_dioxide",
@@ -410,7 +344,6 @@ def engineer_aqi_features(df):
             )
 
             df[f"{col}_roll_mean_24"] = (
-
                 df[col]
                 .shift(1)
                 .rolling(24)
@@ -418,7 +351,7 @@ def engineer_aqi_features(df):
             )
 
     # =========================================================================
-    # TARGETS
+    # TARGETS (FOR TRAINING ONLY)
     # =========================================================================
 
     df["target_24h"] = (
@@ -445,13 +378,20 @@ def engineer_aqi_features(df):
         np.nan
     )
 
+    # Do NOT drop based on target columns
+    feature_cols = [
+        col for col in df.columns
+        if not col.startswith("target_")
+    ]
+
     df = (
         df
-        .dropna()
+        .dropna(subset=feature_cols)
         .reset_index(drop=True)
     )
 
     return df
+
 
 # =============================================================================
 # APPLY FEATURE ENGINEERING
@@ -460,13 +400,22 @@ def engineer_aqi_features(df):
 df_features = engineer_aqi_features(raw_df)
 
 # =============================================================================
+# KEEP ONLY LATEST ROW FOR HOURLY PIPELINE
+# =============================================================================
+
+df_features = (
+    df_features
+    .sort_values("timestamp")
+    .tail(1)
+    .reset_index(drop=True)
+)
+
+# =============================================================================
 # INFORMATION
 # =============================================================================
 
 print("=" * 70)
-
 print("FEATURE ENGINEERING COMPLETED")
-
 print("=" * 70)
 
 print("\nFinal Shape:")
@@ -483,7 +432,6 @@ print(df_features.columns.tolist())
 # =============================================================================
 
 df_features.to_csv(
-
     "data/processed/aqi_feature_store.csv",
     index=False
 )

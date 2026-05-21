@@ -29,14 +29,14 @@ supabase = create_client(
 print("✅ Connected to Supabase")
 
 # ============================================================
-# LOAD DAILY FEATURE FILE (NOT historical feature store)
+# LOAD FEATURE FILE
 # ============================================================
 
 df = pd.read_csv(
-    "data/processed/new_daily_features.csv"
+    "data/processed/aqi_feature_store.csv"
 )
 
-print(f"✅ Loaded {len(df)} rows from new_daily_features.csv")
+print(f"✅ Loaded {len(df)} rows from aqi_feature_store.csv")
 
 if df.empty:
     print("❌ No data found in file")

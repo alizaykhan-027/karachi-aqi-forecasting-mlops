@@ -14,6 +14,9 @@ load_dotenv()
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
+if not SUPABASE_URL or not SUPABASE_KEY:
+    raise ValueError("Missing Supabase credentials")
+
 # ============================================================
 # SUPABASE CLIENT
 # ============================================================
@@ -26,21 +29,26 @@ supabase = create_client(
 print("✅ Connected to Supabase")
 
 # ============================================================
-# LOAD FEATURE STORE CSV
+# LOAD DAILY FEATURE FILE (NOT historical feature store)
 # ============================================================
 
 df = pd.read_csv(
-    "data/processed/aqi_feature_store.csv"
+    "data/processed/new_daily_features.csv"
 )
 
-print(f"✅ Loaded {len(df)} feature rows")
+print(f"✅ Loaded {len(df)} rows from new_daily_features.csv")
+
+if df.empty:
+    print("❌ No data found in file")
+    exit()
 
 # ============================================================
 # FORMAT TIMESTAMP
 # ============================================================
 
 df["timestamp"] = pd.to_datetime(
-    df["timestamp"]
+    df["timestamp"],
+    utc=True
 )
 
 df["timestamp"] = (
@@ -60,7 +68,7 @@ df = df.replace(
 df = df.fillna(0)
 
 # ============================================================
-# FETCH EXISTING BUFFER TIMESTAMPS
+# FETCH EXISTING TIMESTAMPS FROM BUFFER TABLE
 # ============================================================
 
 existing_data = (
@@ -73,12 +81,12 @@ existing_timestamps = set()
 
 if existing_data.data:
     existing_timestamps = {
-        str(row["timestamp"])
+        str(row["timestamp"]).replace("+00:00", "")
         for row in existing_data.data
         if row.get("timestamp")
     }
 
-print(f"Existing buffer timestamps: {len(existing_timestamps)}")
+print(f"Existing timestamps in new_daily_data: {len(existing_timestamps)}")
 
 # ============================================================
 # FILTER NEW ROWS ONLY
@@ -91,7 +99,7 @@ df = df[
 print(f"New rows to upload: {len(df)}")
 
 if df.empty:
-    print("No new rows found")
+    print("✅ No new rows found")
     exit()
 
 # ============================================================
@@ -103,12 +111,12 @@ records = df.to_dict(
 )
 
 # ============================================================
-# UPLOAD IN BATCHES TO BUFFER TABLE
+# UPLOAD IN BATCHES
 # ============================================================
 
 chunk_size = 200
 
-print("\nUploading feature store to new_daily_data...")
+print("\nUploading to new_daily_data...")
 
 for i in range(0, len(records), chunk_size):
 
@@ -133,4 +141,22 @@ for i in range(0, len(records), chunk_size):
         print(e)
         break
 
-print("\n Buffer upload completed")
+print("\n✅ Buffer upload completed")
+
+# ============================================================
+# VERIFY MAX TIMESTAMP
+# ============================================================
+
+latest = (
+    supabase.table("new_daily_data")
+    .select("timestamp")
+    .order("timestamp", desc=True)
+    .limit(1)
+    .execute()
+)
+
+if latest.data:
+    print(
+        f"Latest timestamp in table: "
+        f"{latest.data[0]['timestamp']}"
+    )

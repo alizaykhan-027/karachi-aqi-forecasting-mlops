@@ -403,10 +403,11 @@ df_features = engineer_aqi_features(raw_df)
 # KEEP ONLY LATEST ROW FOR HOURLY PIPELINE
 # =============================================================================
 
+# KEEP LAST 72 HOURS FOR DASHBOARD / HOURLY PIPELINE
 df_features = (
     df_features
     .sort_values("timestamp")
-    .tail(1)
+    .tail(72)
     .reset_index(drop=True)
 )
 

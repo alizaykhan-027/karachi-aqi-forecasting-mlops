@@ -14,6 +14,7 @@ import pandas as pd
 import requests_cache
 
 from retry_requests import retry
+from datetime import datetime, timedelta
 
 # =============================================================================
 # CREATE DATA DIRECTORY
@@ -47,9 +48,22 @@ openmeteo = openmeteo_requests.Client(
 KARACHI_LAT = 24.8607
 KARACHI_LON = 67.0011
 
+# =============================================================================
+# DYNAMIC DATE WINDOW
+# Need enough history for lag features
+# =============================================================================
+
+end_date = datetime.utcnow().date()
+start_date = end_date - timedelta(days=4)
+
+start_date_str = start_date.strftime("%Y-%m-%d")
+end_date_str = end_date.strftime("%Y-%m-%d")
+
 print("=" * 60)
 print("FETCHING KARACHI AQI & WEATHER DATA")
 print("=" * 60)
+
+print(f"Date Window: {start_date_str} → {end_date_str}")
 
 # =============================================================================
 # PART 1: AIR QUALITY DATA
@@ -66,8 +80,8 @@ aq_params = {
     "latitude": KARACHI_LAT,
     "longitude": KARACHI_LON,
 
-    "start_date": "2023-01-01",
-    "end_date": "2026-04-30",
+    "start_date": start_date_str,
+    "end_date": end_date_str,
 
     "hourly": [
 
@@ -120,44 +134,28 @@ aq_df = pd.DataFrame({
     "timestamp": aq_timestamps,
 
     "pm10":
-        aq_hourly
-        .Variables(0)
-        .ValuesAsNumpy(),
+        aq_hourly.Variables(0).ValuesAsNumpy(),
 
     "pm2_5":
-        aq_hourly
-        .Variables(1)
-        .ValuesAsNumpy(),
+        aq_hourly.Variables(1).ValuesAsNumpy(),
 
     "carbon_monoxide":
-        aq_hourly
-        .Variables(2)
-        .ValuesAsNumpy(),
+        aq_hourly.Variables(2).ValuesAsNumpy(),
 
     "nitrogen_dioxide":
-        aq_hourly
-        .Variables(3)
-        .ValuesAsNumpy(),
+        aq_hourly.Variables(3).ValuesAsNumpy(),
 
     "ozone":
-        aq_hourly
-        .Variables(4)
-        .ValuesAsNumpy(),
+        aq_hourly.Variables(4).ValuesAsNumpy(),
 
     "sulphur_dioxide":
-        aq_hourly
-        .Variables(5)
-        .ValuesAsNumpy(),
+        aq_hourly.Variables(5).ValuesAsNumpy(),
 
     "us_aqi":
-        aq_hourly
-        .Variables(6)
-        .ValuesAsNumpy(),
+        aq_hourly.Variables(6).ValuesAsNumpy(),
 
     "european_aqi":
-        aq_hourly
-        .Variables(7)
-        .ValuesAsNumpy()
+        aq_hourly.Variables(7).ValuesAsNumpy()
 })
 
 # =============================================================================
@@ -175,8 +173,8 @@ weather_params = {
     "latitude": KARACHI_LAT,
     "longitude": KARACHI_LON,
 
-    "start_date": "2023-01-01",
-    "end_date": "2026-04-30",
+    "start_date": start_date_str,
+    "end_date": end_date_str,
 
     "hourly": [
 
@@ -226,34 +224,22 @@ weather_df = pd.DataFrame({
     "timestamp": weather_timestamps,
 
     "temperature":
-        weather_hourly
-        .Variables(0)
-        .ValuesAsNumpy(),
+        weather_hourly.Variables(0).ValuesAsNumpy(),
 
     "humidity":
-        weather_hourly
-        .Variables(1)
-        .ValuesAsNumpy(),
+        weather_hourly.Variables(1).ValuesAsNumpy(),
 
     "wind_speed":
-        weather_hourly
-        .Variables(2)
-        .ValuesAsNumpy(),
+        weather_hourly.Variables(2).ValuesAsNumpy(),
 
     "pressure":
-        weather_hourly
-        .Variables(3)
-        .ValuesAsNumpy(),
+        weather_hourly.Variables(3).ValuesAsNumpy(),
 
     "precipitation":
-        weather_hourly
-        .Variables(4)
-        .ValuesAsNumpy(),
+        weather_hourly.Variables(4).ValuesAsNumpy(),
 
     "cloudcover":
-        weather_hourly
-        .Variables(5)
-        .ValuesAsNumpy()
+        weather_hourly.Variables(5).ValuesAsNumpy()
 })
 
 # =============================================================================
@@ -263,10 +249,8 @@ weather_df = pd.DataFrame({
 print("3. Merging AQI + Weather tables...")
 
 merged_df = pd.merge(
-
     aq_df,
     weather_df,
-
     on="timestamp",
     how="inner"
 )
@@ -295,9 +279,7 @@ merged_df.to_csv(
 # =============================================================================
 
 print("\n" + "=" * 60)
-
 print("DATA COLLECTION COMPLETED")
-
 print("=" * 60)
 
 print(f"\n✅ File saved successfully:")
@@ -315,17 +297,7 @@ print(
     f"{merged_df['timestamp'].max()}"
 )
 
-print(
-    f"Average Temperature: "
-    f"{merged_df['temperature'].mean():.2f} °C"
-)
-
-print(
-    f"Average US AQI: "
-    f"{merged_df['us_aqi'].mean():.2f}"
-)
-
 print("-" * 40)
 
 print("\nPreview:")
-print(merged_df.head())
+print(merged_df.tail())

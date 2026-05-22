@@ -495,22 +495,20 @@ for horizon_index, horizon_name in enumerate(horizons):
             save_path
         )
 
-        # remove old production flag
-        supabase.table("model_performance").update({
-            "is_production": False
-        }).eq("horizon", horizon_name).execute()
+        # REPLACE BOTH THE OLD UPDATE AND INSERT CALLS WITH THIS SINGLE UPSERT:
+        supabase.table("model_performance").upsert(
+            {
+                "horizon": horizon_name,
+                "model_name": new_model_name,
+                "mae": float(new_mae),
+                "rmse": float(new_rmse),
+                "r2": float(new_r2),
+                "is_production": True
+            },
+            on_conflict="horizon"
+        ).execute()
 
-        # insert new production model
-        supabase.table("model_performance").insert({
-            "horizon": horizon_name,
-            "model_name": new_model_name,
-            "mae": float(new_mae),
-            "rmse": float(new_rmse),
-            "r2": float(new_r2),
-            "is_production": True
-        }).execute()
-
-        print(f"✅ Promoted new model for {horizon_name}")
+        print(f"✅ Promoted and upserted new model for {horizon_name}")
 
     else:
         print(f"⏭ Kept old production model for {horizon_name}")

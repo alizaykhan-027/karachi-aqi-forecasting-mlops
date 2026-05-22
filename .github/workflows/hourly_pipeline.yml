@@ -5,6 +5,10 @@ on:
     - cron: '0 * * * *'
   workflow_dispatch:
 
+# Moving this to the root level forces the runner to apply it to all actions globally
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
 jobs:
   hourly_pipeline:
     runs-on: ubuntu-latest
@@ -12,7 +16,6 @@ jobs:
     env:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true' # <--- This clears the warning and forces Node 24
 
     steps:
       - name: Checkout Repository

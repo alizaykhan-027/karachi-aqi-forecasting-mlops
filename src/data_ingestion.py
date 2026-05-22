@@ -1,20 +1,10 @@
-# =============================================================================
-# DATA COLLECTION PIPELINE
-# KARACHI AQI + WEATHER DATA
-# PRODUCTION READY
-# =============================================================================
-
-# =============================================================================
-# IMPORTS
-# =============================================================================
-
 import os
 import openmeteo_requests
 import pandas as pd
 import requests_cache
 
 from retry_requests import retry
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone  # Added timezone
 
 # =============================================================================
 # CREATE DATA DIRECTORY
@@ -37,7 +27,8 @@ KARACHI_LON = 67.0011
 # =============================================================================
 # DYNAMIC DATE WINDOW
 # =============================================================================
-end_date = datetime.utcnow().date()
+# Modern future-proof way to get UTC date
+end_date = datetime.now(timezone.utc).date()
 start_date = end_date - timedelta(days=4)
 
 start_date_str = start_date.strftime("%Y-%m-%d")
@@ -83,10 +74,9 @@ aq_timestamps = pd.date_range(
 aq_df = pd.DataFrame({"timestamp": aq_timestamps, **aq_data})
 
 # =============================================================================
-# PART 2: WEATHER DATA (SWITCHED TO FORECAST API FOR REAL-TIME AVAILABILITY)
+# PART 2: WEATHER DATA (STABILIZED FOR HISTORICAL COMPATIBILITY)
 # =============================================================================
 print("2. Fetching weather data...")
-# CHANGED: Using forecast endpoint to avoid the multi-day update delay of the Archive API
 weather_url = "https://api.open-meteo.com/v1/forecast"
 
 weather_metrics = ["temperature_2m", "relative_humidity_2m", "wind_speed_10m", "pressure_msl", "precipitation", "cloudcover"]
@@ -96,7 +86,8 @@ weather_params = {
     "longitude": KARACHI_LON,
     "start_date": start_date_str,
     "end_date": end_date_str,
-    "hourly": weather_metrics
+    "hourly": weather_metrics,
+    "past_days": 4  # 🌟 CRITICAL FIX: Forces the forecast API to include your historical lookback window
 }
 
 weather_response = openmeteo.weather_api(weather_url, params=weather_params)[0]
@@ -130,6 +121,7 @@ weather_df = weather_df.rename(columns=rename_map)
 # PART 3: MERGE DATA
 # =============================================================================
 print("3. Merging AQI + Weather tables...")
+# The inner merge will now succeed because both dataframes share identical past timestamps!
 merged_df = pd.merge(aq_df, weather_df, on="timestamp", how="inner")
 merged_df.insert(0, "city", "Karachi")
 

@@ -86,10 +86,9 @@ weather_params = {
     "longitude": KARACHI_LON,
     "start_date": start_date_str,
     "end_date": end_date_str,
-    "hourly": weather_metrics,
-    "past_days": 4  # 🌟 CRITICAL FIX: Forces the forecast API to include your historical lookback window
+    "hourly": weather_metrics
+    # 🌟 FIXED: Removed 'past_days' because it conflicts with explicit start/end dates
 }
-
 weather_response = openmeteo.weather_api(weather_url, params=weather_params)[0]
 weather_hourly = weather_response.Hourly()
 

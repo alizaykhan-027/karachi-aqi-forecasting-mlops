@@ -6,11 +6,13 @@ import joblib
 import matplotlib.pyplot as plt
 import seaborn as sns
 from supabase import create_client
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv  # 👈 Updated this import
 
 # =========================================================
 # 1. PAGE SETUP & CONFIGURATION
 # =========================================================
+# Force Python to explicitly seek out the .env file globally in your repository root
+load_dotenv(find_dotenv(usecwd=True))
 st.set_page_config(
     page_title="Karachi AQI MLOps Dashboard",
     page_icon="🌬️",

@@ -6,6 +6,7 @@ import joblib
 import matplotlib.pyplot as plt
 import seaborn as sns
 from supabase import create_client
+from dotenv import load_dotenv
 
 # =========================================================
 # 1. PAGE SETUP & CONFIGURATION

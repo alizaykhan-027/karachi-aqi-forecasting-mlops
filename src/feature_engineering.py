@@ -34,6 +34,7 @@ print("=" * 70)
 print("\nRaw Shape:")
 print(raw_df.shape)
 
+
 # =============================================================================
 # FEATURE ENGINEERING FUNCTION
 # =============================================================================
@@ -139,19 +140,6 @@ def engineer_aqi_features(df):
     df["month_cos"] = np.cos(
         2 * np.pi * df["month_of_year"] / 12
     )
-
-    # =========================================================================
-    # WIND FEATURES
-    # =========================================================================
-
-    if "wind_direction_10m" in df.columns:
-
-        radians = np.deg2rad(
-            df["wind_direction_10m"]
-        )
-
-        df["wind_x"] = np.cos(radians)
-        df["wind_y"] = np.sin(radians)
 
     # =========================================================================
     # AQI LAG FEATURES
@@ -378,17 +366,8 @@ def engineer_aqi_features(df):
         np.nan
     )
 
-    # Do NOT drop based on target columns
-    feature_cols = [
-        col for col in df.columns
-        if not col.startswith("target_")
-    ]
-
-    df = (
-        df
-        .dropna(subset=feature_cols)
-        .reset_index(drop=True)
-    )
+    # Remove early rows lost due to lag features
+    df = df.iloc[48:].reset_index(drop=True)
 
     return df
 
@@ -400,10 +379,9 @@ def engineer_aqi_features(df):
 df_features = engineer_aqi_features(raw_df)
 
 # =============================================================================
-# KEEP ONLY LATEST ROW FOR HOURLY PIPELINE
+# KEEP LAST 72 HOURS FOR DASHBOARD / HOURLY PIPELINE
 # =============================================================================
 
-# KEEP LAST 72 HOURS FOR DASHBOARD / HOURLY PIPELINE
 df_features = (
     df_features
     .sort_values("timestamp")

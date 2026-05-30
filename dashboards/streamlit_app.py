@@ -195,7 +195,8 @@ def fetch_latest_state():
     if supabase is None:
         return pd.DataFrame()
     try:
-        res = supabase.table("aqi_features").select("*").order("timestamp", desc=True).limit(1).execute()
+        # FIXED: Modified parameter syntax from 'desc=True' to 'descending=True' to accommodate library updates
+        res = supabase.table("aqi_features").select("*").order("timestamp", descending=True).limit(1).execute()
         return pd.DataFrame(res.data)
     except Exception:
         return pd.DataFrame()

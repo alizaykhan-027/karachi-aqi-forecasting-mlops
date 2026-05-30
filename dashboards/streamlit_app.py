@@ -9,25 +9,26 @@ from dotenv import load_dotenv
 import io
 
 # =============================================================================
-# 1. INITIALIZATION & PATH CONFIGURATION
+# 1. INITIALIZATION & PATH CONFIGURATION (UPDATED FOR CLOUD SECRETS)
 # =============================================================================
 base_dir = os.path.dirname(__file__)
 root_env_path = os.path.abspath(os.path.join(base_dir, "..", ".env"))
 
 load_dotenv(root_env_path)
 
-SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
-DAGSHUB_REPO_OWNER = os.environ.get("DAGSHUB_USERNAME")
-DAGSHUB_REPO_NAME = os.environ.get("DAGSHUB_REPO")
-DAGSHUB_TOKEN = os.environ.get("DAGSHUB_TOKEN")
+# Fallback pattern: Check Streamlit Cloud Secrets first, then local .env / OS env
+SUPABASE_URL = st.secrets.get("SUPABASE_URL", os.environ.get("SUPABASE_URL"))
+SUPABASE_KEY = st.secrets.get("SUPABASE_KEY", os.environ.get("SUPABASE_KEY"))
+DAGSHUB_REPO_OWNER = st.secrets.get("DAGSHUB_USERNAME", os.environ.get("DAGSHUB_USERNAME"))
+DAGSHUB_REPO_NAME = st.secrets.get("DAGSHUB_REPO", os.environ.get("DAGSHUB_REPO"))
+DAGSHUB_TOKEN = st.secrets.get("DAGSHUB_TOKEN", os.environ.get("DAGSHUB_TOKEN"))
 
 if DAGSHUB_TOKEN:
     os.environ["DAGSHUB_USER_TOKEN"] = DAGSHUB_TOKEN
 
-# Page Configuration Initialization
+# Page Configuration Initialization (RENAMED TO SKYCAST)
 st.set_page_config(
-    page_title="AeroPulse - Predictive Climate Intelligence",
+    page_title="SkyCast - Predictive Climate Intelligence",
     page_icon="📡",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -247,10 +248,10 @@ def backcalculate_pm25(aqi):
         return round(((aqi - 201) * (250.4 - 150.5) / (300 - 201)) + 150.5, 1)
 
 # =============================================================================
-# 4. BRAND APP HEADER
+# 4. BRAND APP HEADER (RENAMED TO SKYCAST)
 # =============================================================================
 st.write("")
-st.markdown("<h1 style='margin:0; font-weight:700; font-size:2.4rem; color:#0f172a; letter-spacing:-0.6px;'>AeroPulse</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='margin:0; font-weight:700; font-size:2.4rem; color:#0f172a; letter-spacing:-0.6px;'>SkyCast</h1>", unsafe_allow_html=True)
 st.markdown("<p style='color:#475569; margin-top:2px; font-size:0.95rem;'>Predictive Ambient Air Quality Analytics & Meteorological Outlook Platform • <b>Karachi, Pakistan</b></p>", unsafe_allow_html=True)
 st.write("")
 
@@ -343,7 +344,7 @@ if trigger_forecast:
                 st.download_button(
                     label="📥 Download Comprehensive Report",
                     data=report_stream.getvalue(),
-                    file_name=f"vanesight_environmental_report_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
+                    file_name=f"skycast_environmental_report_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
                     mime="text/csv",
                     use_container_width=True
                 )
@@ -483,9 +484,6 @@ if trigger_forecast:
                     """, unsafe_allow_html=True)
 
             # =============================================================================
-            # 9. SEPARATED COMPACT VISUALIZATION SECTION
-            # =============================================================================
-            # =============================================================================
             # 9. SEPARATED COMPACT VISUALIZATION SECTION (FIXED: CAPSULES REMOVED)
             # =============================================================================
             st.write("")
@@ -495,7 +493,6 @@ if trigger_forecast:
             col_chart1, col_chart2 = st.columns(2)
             
             with col_chart1:
-                # Native container cleanly frames the chart without creating ghost capsules
                 with st.container(border=True):
                     st.markdown("<p style='font-size:0.88rem; font-weight:600; color:#334155; margin:0 0 14px 0;'>Multi-Horizon Target Trend Line</p>", unsafe_allow_html=True)
                     
@@ -509,7 +506,6 @@ if trigger_forecast:
                     st.line_chart(trend_df, height=200, color="#047857")
                 
             with col_chart2:
-                # Native container cleanly frames the chart without creating ghost capsules
                 with st.container(border=True):
                     st.markdown("<p style='font-size:0.88rem; font-weight:600; color:#334155; margin:0 0 14px 0;'>Relative Pollutant Load Matrix</p>", unsafe_allow_html=True)
                     
@@ -523,6 +519,7 @@ if trigger_forecast:
                     pollutant_df = pd.DataFrame({"Substance": p_labels, "Mass Level": p_metrics}).set_index("Substance")
                     
                     st.bar_chart(pollutant_df, height=200, color="#0ea5e9")
+
 # =============================================================================
 # 10. PUBLIC REGULATORY SCALE INTERPRETATION CARD
 # =============================================================================

@@ -192,16 +192,27 @@ def load_remote_model(horizon):
     return None
 
 def fetch_latest_state():
-    """Fetches from buffer if available, else main table."""
     if supabase is None: return pd.DataFrame()
     try:
-        # Try primary table
-        res = supabase.table("aqi_features").select("*").order("timestamp", desc=False).limit(1).execute()
+        # We must order by timestamp in descending order to get the latest entry
+        # .order("timestamp", desc=True) is the correct Supabase syntax
+        res = supabase.table("aqi_features")\
+            .select("*")\
+            .order("timestamp", desc=True)\
+            .limit(1)\
+            .execute()
+        
         if not res.data:
             # Fallback to buffer if primary is empty
-            res = supabase.table("new_daily_data").select("*").order("timestamp", desc=False).limit(1).execute()
+            res = supabase.table("new_daily_data")\
+                .select("*")\
+                .order("timestamp", desc=True)\
+                .limit(1)\
+                .execute()
+                
         return pd.DataFrame(res.data)
-    except Exception:
+    except Exception as e:
+        st.error(f"Error fetching data: {e}")
         return pd.DataFrame()
 
 # =============================================================================

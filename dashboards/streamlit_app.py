@@ -181,7 +181,7 @@ def load_remote_model(horizon):
         if not os.path.exists(local_path):
             import dagshub
             dagshub.download_url(
-                repo_url=f"https://dagshub.com/{DAGSHUB_REPO_OWNER}/{DAGSHUB_REPO_NAME}",
+                repo_url=f"https://dagshub.com/{DAGSHUB_USER_NAME}/{DAGSHUB_REPO}",
                 remote_path=f"models/best_model_{horizon}.pkl",
                 local_path=local_path
             )
@@ -192,11 +192,14 @@ def load_remote_model(horizon):
     return None
 
 def fetch_latest_state():
-    if supabase is None:
-        return pd.DataFrame()
+    """Fetches from buffer if available, else main table."""
+    if supabase is None: return pd.DataFrame()
     try:
-        # FIXED: Modified parameter syntax from 'desc=True' to 'descending=True' to accommodate library updates
-        res = supabase.table("aqi_features").select("*").order("timestamp", descending=True).limit(1).execute()
+        # Try primary table
+        res = supabase.table("aqi_features").select("*").order("timestamp", desc=False).limit(1).execute()
+        if not res.data:
+            # Fallback to buffer if primary is empty
+            res = supabase.table("new_daily_data").select("*").order("timestamp", desc=False).limit(1).execute()
         return pd.DataFrame(res.data)
     except Exception:
         return pd.DataFrame()

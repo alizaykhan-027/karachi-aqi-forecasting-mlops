@@ -440,30 +440,36 @@ if trigger_forecast:
             # =============================================================================
             # 7. METEOROLOGICAL SUMMARY & RUNTIME BOUNDS OVERLOOK
             # =============================================================================
+            # =============================================================================
+# 7. METEOROLOGICAL SUMMARY & RUNTIME BOUNDS OVERLOOK (FIXED LABELS)
+# =============================================================================
             rolling_avg_val = float(df_live.get('aqi_rolling_avg_24h', [current_val])[0])
-            rolling_min_val = float(df_live.get('pm25_roll_min_24', [current_val * 0.8])[0])
-            rolling_max_val = float(df_live.get('pm25_roll_max_24', [current_val * 1.3])[0])
-            
+# Using the raw values from your dataframe
+            min_pm25 = float(df_live.get('pm25_roll_min_24', [0.0])[0])
+            max_pm25 = float(df_live.get('pm25_roll_max_24', [0.0])[0])
+
             if rolling_avg_val <= 50:
-                outlook_desc = "Optimal Ambient Baseline"
+              outlook_desc = "Optimal Ambient Baseline"
             elif rolling_avg_val <= 100:
-                outlook_desc = "Moderate Ambient Baseline"
+              outlook_desc = "Moderate Ambient Baseline"
             elif rolling_avg_val <= 150:
-                outlook_desc = "Elevated Saturated Profile"
+             outlook_desc = "Elevated Saturated Profile"
             else:
-                outlook_desc = "Critical Air Pollution Scale"
+             outlook_desc = "Critical Air Pollution Scale"
 
             st.markdown("<p style='text-transform:uppercase; font-size:0.72rem; font-weight:600; color:#64748b; letter-spacing:0.5px; margin-bottom:14px;'>Stationary 24-Hour Historical Statistics</p>", unsafe_allow_html=True)
-            
+
             col_stat1, col_stat2, col_stat3, col_stat4 = st.columns(4)
             with col_stat1:
-                st.markdown(f"<div class='summary-stat-box'><div style='color:#64748b; font-size:0.82rem; font-weight:500;'>24h Average AQI</div><div style='font-size:1.5rem; font-weight:700; color:#0f172a; margin-top:4px;'>{round(rolling_avg_val, 1)}</div></div>", unsafe_allow_html=True)
+             st.markdown(f"<div class='summary-stat-box'><div style='color:#64748b; font-size:0.82rem; font-weight:500;'>24h Avg AQI</div><div style='font-size:1.5rem; font-weight:700; color:#0f172a; margin-top:4px;'>{round(rolling_avg_val, 1)}</div></div>", unsafe_allow_html=True)
             with col_stat2:
-                st.markdown(f"<div class='summary-stat-box'><div style='color:#64748b; font-size:0.82rem; font-weight:500;'>24h Floor Minimum</div><div style='font-size:1.5rem; font-weight:700; color:#0f172a; margin-top:4px;'>{int(round(rolling_min_val))}</div></div>", unsafe_allow_html=True)
+    # Changed label to reflect that this is a PM2.5 measurement, not an AQI index
+             st.markdown(f"<div class='summary-stat-box'><div style='color:#64748b; font-size:0.82rem; font-weight:500;'>24h Min PM2.5</div><div style='font-size:1.5rem; font-weight:700; color:#0f172a; margin-top:4px;'>{min_pm25}</div></div>", unsafe_allow_html=True)
             with col_stat3:
-                st.markdown(f"<div class='summary-stat-box'><div style='color:#64748b; font-size:0.82rem; font-weight:500;'>24h Observed Peak</div><div style='font-size:1.5rem; font-weight:700; color:#0f172a; margin-top:4px;'>{int(round(rolling_max_val))}</div></div>", unsafe_allow_html=True)
+    # Changed label to reflect that this is a PM2.5 measurement
+             st.markdown(f"<div class='summary-stat-box'><div style='color:#64748b; font-size:0.82rem; font-weight:500;'>24h Peak PM2.5</div><div style='font-size:1.5rem; font-weight:700; color:#0f172a; margin-top:4px;'>{max_pm25}</div></div>", unsafe_allow_html=True)
             with col_stat4:
-                st.markdown(f"<div class='summary-stat-box'><div style='color:#64748b; font-size:0.82rem; font-weight:500;'>Overall Status Summary</div><div style='font-size:1.02rem; font-weight:700; color:#475569; margin-top:10px;'>{outlook_desc}</div></div>", unsafe_allow_html=True)
+             st.markdown(f"<div class='summary-stat-box'><div style='color:#64748b; font-size:0.82rem; font-weight:500;'>Status Summary</div><div style='font-size:0.9rem; font-weight:700; color:#475569; margin-top:10px;'>{outlook_desc}</div></div>", unsafe_allow_html=True)
 
             # =============================================================================
             # 8. PREDICTIVE OUTLOOK HORIZONS WITH INLINE HEALTH ADVISORY

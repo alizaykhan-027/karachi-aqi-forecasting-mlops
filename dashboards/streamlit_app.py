@@ -19,8 +19,8 @@ load_dotenv(root_env_path)
 # Fallback pattern: Check Streamlit Cloud Secrets first, then local .env / OS env
 SUPABASE_URL = st.secrets.get("SUPABASE_URL", os.environ.get("SUPABASE_URL"))
 SUPABASE_KEY = st.secrets.get("SUPABASE_KEY", os.environ.get("SUPABASE_KEY"))
-DAGSHUB_REPO_OWNER = st.secrets.get("DAGSHUB_USERNAME", os.environ.get("DAGSHUB_USERNAME"))
-DAGSHUB_REPO_NAME = st.secrets.get("DAGSHUB_REPO", os.environ.get("DAGSHUB_REPO"))
+DAGSHUB_USER_NAME = st.secrets.get("DAGSHUB_USERNAME", os.environ.get("DAGSHUB_USERNAME"))
+DAGSHUB_REPO = st.secrets.get("DAGSHUB_REPO", os.environ.get("DAGSHUB_REPO"))
 DAGSHUB_TOKEN = st.secrets.get("DAGSHUB_TOKEN", os.environ.get("DAGSHUB_TOKEN"))
 
 if DAGSHUB_TOKEN:
@@ -172,7 +172,7 @@ supabase = init_supabase()
 
 @st.cache_resource(ttl=3600)
 def load_remote_model(horizon):
-    if not DAGSHUB_REPO_OWNER or not DAGSHUB_REPO_NAME:
+    if not DAGSHUB_USER_NAME or not DAGSHUB_REPO:
         return None
     local_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "models"))
     local_path = os.path.join(local_dir, f"best_model_{horizon}.pkl")

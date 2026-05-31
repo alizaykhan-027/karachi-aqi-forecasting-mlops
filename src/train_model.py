@@ -139,19 +139,6 @@ df_raw = (
 
 df_raw = df_raw.replace([np.inf, -np.inf], np.nan)
 
-# --- ADD THIS ROBUST CLEANING BLOCK ---
-# 1. Ensure all features and targets are treated as numeric
-# 2. Force conversion to float; invalid values (strings/None) become NaN
-all_potential_cols = priority_features + targets
-for col in all_potential_cols:
-    if col in df_raw.columns:
-        df_raw[col] = pd.to_numeric(df_raw[col], errors='coerce')
-
-# 3. Now safely fill the holes
-df_raw[all_potential_cols] = df_raw[all_potential_cols].fillna(0)
-# --------------------------------------
-
-print(f"\n✅ Total merged raw entries: {len(df_raw)}")
 # =========================================================
 # FEATURES & CONFIGURATIONS
 # =========================================================
@@ -181,6 +168,18 @@ targets = ["target_24h", "target_48h", "target_72h"]
 
 # Fill input metric holes with 0 to prevent ML model training failures
 df_raw[priority_features] = df_raw[priority_features].fillna(0)
+# DATA CLEANING & TYPE ENFORCEMENT
+
+all_potential_cols = priority_features + targets
+
+for col in all_potential_cols:
+    if col in df_raw.columns:
+        df_raw[col] = pd.to_numeric(df_raw[col], errors='coerce')
+
+# Now safely fill the holes
+df_raw[all_potential_cols] = df_raw[all_potential_cols].fillna(0)
+
+print(f"\n✅ Total merged raw entries: {len(df_raw)}")
 
 # =========================================================
 # SAFE TRAINING EXTRACTION (Handles NULL target rows gracefully)

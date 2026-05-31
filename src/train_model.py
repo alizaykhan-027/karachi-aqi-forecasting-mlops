@@ -71,7 +71,7 @@ def save_model_version(version_name, horizon, model_name, mae, rmse, r2, promote
         "mae": float(mae),
         "rmse": float(rmse),
         "r2": float(r2),
-        "promoted": promoted
+        "promoted": bool(promoted)  # <--- FIX: Force native Python bool
     }).execute()
 
 
@@ -299,13 +299,13 @@ for horizon_index, horizon_name in enumerate(horizons):
         joblib.dump(best_model, f"models/best_model_{horizon_name}.pkl")
 
         supabase.table("model_performance").upsert({
-            "horizon": horizon_name,
-            "model_name": new_model_name,
-            "mae": float(new_mae),
-            "rmse": float(new_rmse),
-            "r2": float(new_r2),
-            "is_production": True
-        }, on_conflict="horizon").execute()
+    "horizon": horizon_name,
+    "model_name": new_model_name,
+    "mae": float(new_mae),
+    "rmse": float(new_rmse),
+    "r2": float(new_r2),
+    "is_production": bool(True)    # <--- Ensure this is a Python bool
+}, on_conflict="horizon").execute()
         print(f"✅ Promoted and upserted new model for {horizon_name}")
     else:
         print(f"⏭ Kept old production model for {horizon_name}")

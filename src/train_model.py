@@ -235,7 +235,8 @@ for model_name, base_model in model_configs.items():
 
     for i in range(3):
         # Gracefully replace missing sub-targets within trainable subsets if present
-        y_train_clean = y_train.iloc[:, i].fillna(method="ffill").fillna(method="bfill")
+        # Look for this in your loop
+        y_train_clean = y_train.iloc[:, i].ffill().bfill()
         
         sample_weights = np.where(y_train_clean < 35, 2.5, 1.0)
         model = clone(base_model)
@@ -249,7 +250,7 @@ for model_name, base_model in model_configs.items():
     trained_models[model_name] = horizon_models
 
     for i, h in enumerate(horizons):
-        y_test_clean = y_test.iloc[:, i].fillna(method="ffill").fillna(method="bfill")
+        y_test_clean = y_test.iloc[:, i].ffill().bfill()
         
         mae = mean_absolute_error(y_test_clean, predictions[:, i])
         rmse = np.sqrt(mean_squared_error(y_test_clean, predictions[:, i]))

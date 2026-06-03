@@ -20,8 +20,9 @@ The platform operates entirely via automated, modular cloud transitions to elimi
 ```text
 [ Multi-Year Environmental Ledger ] ──> [ Data Ingestion Sync ] ──> [ Supabase Cloud Feature Store ]
                                                                                   │
-[ Interactive Streamlit Web UI ] <── [ Serialization Engine ] <── [ GitHub Actions MLOps Orchestrator ] ```
+[ Interactive Streamlit Web UI ] <── [ Serialization Engine ] <── [ GitHub Actions MLOps Orchestrator ] 
 
 Automated Ingestion Workflow (hourly_pipeline.yml): Fetches incoming trace parameters and blends them over a strict timeline via a deterministic inner merge, publishing streaming frames straight to a Supabase Cloud Feature Store.
 
-Automated Continuous Training (daily_training_pipeline.yml): Triggers an automated validation run every 24 hours. The engine evaluates historical metrics, runs a hyperparameter grid tuning loop, registers artifacts to a remote tracking server, and dynamically overwrites local binaries with the winning production weights. 
+Automated Continuous Training (daily_training_pipeline.yml): Triggers an automated validation run every 24 hours. The engine evaluates historical metrics, runs a hyperparameter grid tuning loop, registers artifacts to a remote tracking server, and dynamically overwrites local binaries with the winning production weights.
+## 📂 Repository Topography & Manifest

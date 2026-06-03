@@ -9,7 +9,7 @@ SkyCast is a serverless, production-grade AI system designed to forecast Air Qua
 👉 **Launch Live SkyCast Production Dashboard**
 `YOUR_STREAMLIT_DEPLOYMENT_URL_HERE`
 
-[![Streamlit App](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge\&logo=Streamlit\&logoColor=white)](YOUR_STREAMLIT_DEPLOYMENT_URL_HERE)
+[![Streamlit App](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge\&logo=Streamlit\&logoColor=white)](karachi-aqi-forecasting-mlops-yh4qpwm7xacy4r6yf4be5e)
 
 ---
 

@@ -8,10 +8,9 @@ SkyCast is a serverless, production-grade AI system designed to forecast time-se
 ## 🔗 Live Production Gateways
 The system architecture exposes a client-facing visualization dashboard alongside remote experimentation registries:
 
-👉 **[Launch Live SkyCast Production Dashboard](YOUR_ACTUAL_DEPLOYMENT_URL_HERE)** 👉 **[Explore Remote Model Registry & Experiment Tracking Logs](YOUR_DAGSHUB_OR_MLFLOW_URL_HERE)**
+👉 **[Launch Live SkyCast Production Dashboard](YOUR_ACTUAL_DEPLOYMENT_URL_HERE)** 
 
 [![Streamlit App](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=Streamlit&logoColor=white)](YOUR_ACTUAL_DEPLOYMENT_URL_HERE)
-[![DagsHub Tracking](https://img.shields.io/badge/DagsHub-MLflow-000000?style=for-the-badge&logo=git&logoColor=white)](YOUR_DAGSHUB_OR_MLFLOW_URL_HERE)
 
 ---
 

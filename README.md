@@ -147,9 +147,9 @@ Users can download forecast results and processed datasets in CSV format for fur
 ## 1. Clone Repository
 
 ```bash
-git clone https://github.com/YOUR_GITHUB_USERNAME/KARACHI-AQI-FORECASTING-PLATFORM.git
+git clone https://github.com/alizaykhan-027/karachi-aqi-forecasting-mlops.git
 
-cd KARACHI-AQI-FORECASTING-PLATFORM
+cd Karachi_aqi_forecasting_mlops
 ```
 
 ## 2. Create Virtual Environment

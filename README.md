@@ -219,7 +219,6 @@ This project is licensed under the MIT License.
 
 Developed as part of an end-to-end MLOps project for automated urban air quality forecasting and continuous machine learning lifecycle management.
 
-**LinkedIn:** Alizay Khan
 **Track:** AI & MLOps
 **Project:** SkyCast – Multi-Horizon AQI Forecasting Platform
 

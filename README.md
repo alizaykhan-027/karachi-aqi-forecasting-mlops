@@ -20,7 +20,7 @@ The platform operates entirely via automated, modular cloud transitions to elimi
 ```text
 [ Multi-Year Environmental Ledger ] ──> [ Data Ingestion Sync ] ──> [ Supabase Cloud Feature Store ]
                                                                                   │
-[ Interactive Streamlit Web UI ] <── [ Serialization Engine ] <── [ GitHub Actions MLOps Orchestrator ] ```text
+[ Interactive Streamlit Web UI ] <── [ Serialization Engine ] <── [ GitHub Actions MLOps Orchestrator ] ```
 
 Automated Ingestion Workflow (hourly_pipeline.yml): Fetches incoming trace parameters and blends them over a strict timeline via a deterministic inner merge, publishing streaming frames straight to a Supabase Cloud Feature Store.
 

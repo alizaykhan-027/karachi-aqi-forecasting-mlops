@@ -1,60 +1,48 @@
 # 🌦️ SkyCast: Automated MLOps Engine for Multi-Horizon Urban Air Quality Forecasting
 
-SkyCast is a serverless, production-grade AI system designed to forecast time-series Air Quality Index (AQI) trajectories for Karachi, Pakistan across 24-hour, 48-hour, and 72-hour future horizons. By combining automated data harvesting engines with a cloud-synchronized feature store, the framework establishes a continuous machine learning lifecycle—orchestrating near-real-time ingestion pipelines, automated daily optimization, and decoupled deployment endpoints.
+SkyCast is a serverless, production-grade AI system designed to forecast Air Quality Index (AQI) levels for Karachi, Pakistan across 24-hour, 48-hour, and 72-hour future horizons. By combining automated data collection, cloud-based storage, machine learning retraining, and real-time visualization, the platform establishes a complete end-to-end MLOps lifecycle for urban air quality forecasting.
 
 ---
 
-## 🔗 Live Production Gateways
-
-The system architecture exposes a client-facing visualization dashboard alongside remote experimentation registries:
+## 🔗 Live Production Dashboard
 
 👉 **Launch Live SkyCast Production Dashboard**
-`YOUR_ACTUAL_DEPLOYMENT_URL_HERE`
+`YOUR_STREAMLIT_DEPLOYMENT_URL_HERE`
 
-👉 **Explore Remote Model Registry & Experiment Tracking Logs**
-`YOUR_DAGSHUB_OR_MLFLOW_URL_HERE`
-
-[![Streamlit App](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge\&logo=Streamlit\&logoColor=white)](YOUR_ACTUAL_DEPLOYMENT_URL_HERE)
-[![DagsHub Tracking](https://img.shields.io/badge/DagsHub-MLflow-000000?style=for-the-badge\&logo=git\&logoColor=white)](YOUR_DAGSHUB_OR_MLFLOW_URL_HERE)
+[![Streamlit App](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge\&logo=Streamlit\&logoColor=white)](YOUR_STREAMLIT_DEPLOYMENT_URL_HERE)
 
 ---
 
-# 🏗️ Production System Lifecycle Architecture
+# 🏗️ Production System Architecture
 
-The platform operates entirely via automated, modular cloud transitions to eliminate manual data or file maintenance:
+The platform operates through automated cloud-based workflows that continuously collect data, update feature stores, retrain models, and serve predictions to end users.
 
 ```text
-[ Multi-Year Environmental Ledger ]
-                │
-                ▼
-[ Data Ingestion Sync ]
-                │
-                ▼
+[ Historical AQI & Weather Data ]
+                 │
+                 ▼
+[ Automated Data Collection ]
+                 │
+                 ▼
 [ Supabase Cloud Feature Store ]
-                │
-                ▼
-[ GitHub Actions MLOps Orchestrator ]
-                │
-                ▼
-[ Serialization Engine ]
-                │
-                ▼
-[ Interactive Streamlit Web UI ]
+                 │
+                 ▼
+[ Daily Model Retraining ]
+                 │
+                 ▼
+[ Model Serialization ]
+                 │
+                 ▼
+[ Streamlit Dashboard ]
 ```
 
-### Automated Ingestion Workflow (`hourly_pipeline.yml`)
+### Automated Data Ingestion
 
-Fetches incoming environmental trace parameters and blends them over a strict timeline using deterministic inner joins. Processed records are synchronized directly into the Supabase Cloud Feature Store.
+The ingestion workflow continuously gathers environmental and weather-related information, processes incoming records, and synchronizes them to the Supabase Feature Store.
 
-### Automated Continuous Training (`daily_training_pipeline.yml`)
+### Automated Model Retraining
 
-Triggers a complete retraining cycle every 24 hours. The pipeline:
-
-* Evaluates historical model performance
-* Performs hyperparameter optimization
-* Registers experiments and artifacts to a remote tracking server
-* Selects the best-performing model
-* Automatically updates production-ready model binaries
+A scheduled GitHub Actions workflow retrains the forecasting model every 24 hours using the latest available data. The best-performing model is automatically saved and used for future predictions.
 
 ---
 
@@ -87,11 +75,7 @@ KARACHI-AQI-FORECASTING-PLATFORM/
 ├── reports/
 │
 ├── src/
-│   ├── model_registry/
-│   │   └── register_model.py
-│   │
 │   ├── data_ingestion.py
-│   ├── feature_engineering.py
 │   ├── predict.py
 │   ├── retrain_pipeline.py
 │   ├── train_model.py
@@ -107,146 +91,53 @@ KARACHI-AQI-FORECASTING-PLATFORM/
 
 ---
 
-# 📊 Feature Engineering & Data Pipeline
+# 🚀 Dashboard Features
 
-The system transforms heterogeneous environmental data into a structured feature matrix optimized for AQI forecasting.
+The production dashboard provides an intuitive interface for monitoring and forecasting urban air quality.
 
-## Meteorological Features
+### 📈 AQI Forecasting
 
-* Temperature
-* Relative Humidity
-* Atmospheric Pressure
-* Wind Speed
-* Wind Direction
+* Current AQI monitoring
+* 24-hour AQI prediction
+* 48-hour AQI prediction
+* 72-hour AQI prediction
+* Historical AQI trend visualization
 
-## Air Quality Features
+### 🚨 Health Advisory Alerts
 
-* PM2.5
-* PM10
-* Carbon Monoxide (CO)
-* Nitrogen Dioxide (NO₂)
-* Ozone (O₃)
-* Sulfur Dioxide (SO₂)
+Automatically converts AQI values into easy-to-understand health warnings based on AQI severity levels.
 
-## Engineered Features
+### 🤖 AI Forecast Summary
 
-* Multi-hour lag variables
-* Rolling means
-* Rolling standard deviations
-* Exponential moving averages
-* AQI trend indicators
-* Cyclical temporal encodings
-
-  * `hour_sin`
-  * `hour_cos`
-  * `month_sin`
-  * `month_cos`
-* Pollution event flags
-* Seasonal indicators
-
----
-
-# 🏆 Model Benchmarking & Evaluation
-
-Multiple forecasting architectures were benchmarked under identical evaluation protocols to identify the most accurate production model.
-
-| Model                   | Horizon  | MAE  | RMSE | R² Score | Status        |
-| ----------------------- | -------- | ---- | ---- | -------- | ------------- |
-| Extra Trees Regressor   | 24 Hours | X.XX | X.XX | 0.XX     | 🏅 Production |
-| Extra Trees Regressor   | 48 Hours | X.XX | X.XX | 0.XX     | 🏅 Production |
-| Extra Trees Regressor   | 72 Hours | X.XX | X.XX | 0.XX     | 🏅 Production |
-| Random Forest Regressor | 24 Hours | X.XX | X.XX | 0.XX     | Baseline      |
-| XGBoost Regressor       | 24 Hours | X.XX | X.XX | 0.XX     | Baseline      |
-| LightGBM Regressor      | 24 Hours | X.XX | X.XX | 0.XX     | Baseline      |
-| LSTM Recurrent Network  | 24 Hours | X.XX | X.XX | 0.XX     | Baseline      |
-
-> Replace placeholder metrics with actual model performance values.
-
----
-
-# 🛡️ Explainable AI (XAI)
-
-To improve transparency and trustworthiness, SkyCast incorporates both global and local interpretability frameworks.
-
-## SHAP (Global Explainability)
-
-Provides feature importance analysis across the entire dataset.
-
-Key observations include:
-
-* PM2.5 lag features strongly influence short-term AQI predictions.
-* Carbon monoxide contributes significantly during pollution spikes.
-* Temperature and pressure affect long-term atmospheric dispersion.
-
-## LIME (Local Explainability)
-
-Generates prediction-specific explanations directly inside the dashboard.
-
-Features are visualized using:
-
-* 🟧 Positive contributions (increase AQI)
-* 🟦 Negative contributions (decrease AQI)
-
-This enables users to understand why a specific forecast was generated.
-
----
-
-# 🚀 Streamlit Dashboard Features
-
-The production dashboard provides a user-friendly interface for environmental monitoring and forecasting.
-
-### 📈 AQI Visualization
-
-* Current AQI status
-* 24-hour forecast
-* 48-hour forecast
-* 72-hour forecast
-* AQI category overlays
-
-### 🚨 Automated Health Advisories
-
-Transforms numerical AQI forecasts into understandable public-health warnings.
-
-### 🤖 Generate AI Forecast
-
-Creates automated narrative summaries based on current environmental conditions and forecasted AQI trajectories.
+Generates concise natural-language summaries explaining current environmental conditions and future AQI trends.
 
 ### 📥 Export Results
 
-Users can download:
-
-* Forecast results
-* Feature matrices
-* Historical records
-* CSV reports
+Users can download forecast results and processed datasets in CSV format for further analysis.
 
 ---
 
-# ⚙️ MLOps Stack
+# ⚙️ MLOps Technology Stack
 
 ### Data Layer
 
 * Supabase Feature Store
-* Automated Data Collection
-* Cloud Synchronization
+* Automated Data Collection Pipelines
 
-### Training Layer
+### Machine Learning Layer
 
+* Python
 * Scikit-Learn
 * XGBoost
-* LightGBM
-* TensorFlow/Keras
 
-### Experiment Tracking
+### Automation Layer
 
-* DagsHub
-* MLflow
+* GitHub Actions
+* Scheduled Retraining Workflows
 
 ### Deployment Layer
 
 * Streamlit Cloud
-* GitHub Actions
-* Automated Retraining
 
 ---
 
@@ -294,8 +185,6 @@ Create a `.env` file in the project root directory:
 SUPABASE_URL="YOUR_SUPABASE_PROJECT_ENDPOINT"
 
 SUPABASE_KEY="YOUR_SUPABASE_ACCESS_TOKEN"
-
-DAGSHUB_TOKEN="YOUR_DAGSHUB_REPO_TOKEN"
 ```
 
 ---
@@ -310,11 +199,10 @@ streamlit run dashboards/streamlit_app.py
 
 # 📅 Automation Schedule
 
-| Workflow                    | Frequency      | Purpose                                |
-| --------------------------- | -------------- | -------------------------------------- |
-| hourly_pipeline.yml         | Every Hour     | Data Ingestion & Feature Store Updates |
-| daily_training_pipeline.yml | Every 24 Hours | Retraining & Model Selection           |
-| Streamlit Deployment        | Continuous     | Real-Time Forecast Delivery            |
+| Workflow                    | Frequency      | Purpose                                 |
+| --------------------------- | -------------- | --------------------------------------- |
+| hourly_pipeline.yml         | Every Hour     | Data Collection & Feature Store Updates |
+| daily_training_pipeline.yml | Every 24 Hours | Model Retraining & Deployment           |
 
 ---
 
@@ -328,12 +216,10 @@ This project is licensed under the MIT License.
 
 **Alizay Khan**
 
-AI Engineer | Machine Learning | MLOps | Environmental Forecasting
+Developed as part of an end-to-end MLOps project for automated urban air quality forecasting and continuous machine learning lifecycle management.
 
-Developed as a complete end-to-end MLOps platform for automated urban air-quality prediction and continuous model lifecycle management.
+**LinkedIn:** Alizay Khan
+**Track:** AI & MLOps
+**Project:** SkyCast – Multi-Horizon AQI Forecasting Platform
 
-├── utils.py                            # Shared structural utility scripts and modules
-├── .cache_sqlite                       # Speed optimization network cache layer
-├── requirements.txt                    # Project production dependency blueprint
-└── README.md                           # System operational manual
 

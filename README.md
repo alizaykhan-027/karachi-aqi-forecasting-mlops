@@ -26,3 +26,41 @@ Automated Ingestion Workflow (hourly_pipeline.yml): Fetches incoming trace param
 
 Automated Continuous Training (daily_training_pipeline.yml): Triggers an automated validation run every 24 hours. The engine evaluates historical metrics, runs a hyperparameter grid tuning loop, registers artifacts to a remote tracking server, and dynamically overwrites local binaries with the winning production weights.
 ## 📂 Repository Topography & Manifest
+
+The workspace folder layout balances data caching, automated processing stages, persistent machine learning binaries, and visualization interfaces:
+
+```text
+KARACHI-AQI-FORECASTING-PLATFORM/
+│
+├── .github/workflows/
+│   ├── daily_training_pipeline.yml  # Automated daily optimization & MLOps retraining script
+│   └── hourly_pipeline.yml          # Automated hourly micro-ingestion & cloud synchronizer
+│
+├── dashboards/
+│   └── streamlit_app.py                # Core web UI, rendering visualizations & health alerts
+│
+├── data/
+│   ├── processed/
+│   │   └── aqi_feature_store.csv       # Flattened matrix generated for analytical execution
+│   └── raw/
+│       └── karachi_aqi_historical.csv  # Combined multi-year open telemetry master raw archive
+│
+├── models/                             # Persistent local cache for serialized weights (.pkl)
+├── notebooks/                          # Development notebooks for initial exploratory work
+├── reports/                            # Static performance ledgers and operational printouts
+│
+├── src/
+│   ├── model_registry/
+│   │   └── register_model.py           # DagsHub/MLflow artifact pipeline management script
+│   ├── data_ingestion.py               # Ambient collection routing engine
+│   ├── feature_engineering.py          # Cyclical, rolling lag, and statistical extraction
+│   ├── predict.py                      # Multi-horizon batch forecasting inference execution
+│   ├── retrain_pipeline.py            # Automated calibration workflow wrapper
+│   ├── train_model.py                  # Core training iteration optimization code
+│   └── upload_to_supabase.py           # Remote cloud feature-store synchronizer
+│
+├── utils.py                            # Shared structural utility scripts and modules
+├── .cache_sqlite                       # Speed optimization network cache layer
+├── requirements.txt                    # Project production dependency blueprint
+└── README.md                           # System operational manual
+

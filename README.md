@@ -126,7 +126,7 @@ Users can download forecast results and processed datasets in CSV format for fur
 
 * Python
 * Scikit-Learn
-* XGBoost
+
 
 ### Automation Layer
 
@@ -212,7 +212,9 @@ This project is licensed under the MIT License.
 
 Developed as part of an end-to-end MLOps project for automated urban air quality forecasting and continuous machine learning lifecycle management.
 
+**Program:** 10Pearls Shine Internship 2026 (Cohort 8)
 **Track:** AI & MLOps
+**Organization:** 10Pearls
 **Project:** SkyCast – Multi-Horizon AQI Forecasting Platform
 
 

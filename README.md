@@ -4,13 +4,11 @@ SkyCast is a serverless, production-grade AI system designed to forecast Air Qua
 
 ---
 
-## 🔗 Live Production Gateways
-The system architecture exposes a client-facing visualization dashboard alongside remote experimentation registries:
+## 🔗 Live Production Gateway
 
-👉 **[Launch Live SkyCast Production Dashboard]([(https://karachi-aqi-forecasting-mlops-yh4qpwm7xacy4r6yf4be5e.streamlit.app/)])**
+👉 **🚀 [Live Dashboard](https://karachi-aqi-forecasting-mlops-yh4qpwm7xacy4r6yf4be5e.streamlit.app/)**
 
-[![Streamlit App](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=Streamlit&logoColor=white)]([(https://karachi-aqi-forecasting-mlops-yh4qpwm7xacy4r6yf4be5e.streamlit.app/])
-
+[![Streamlit App](https://img.shields.io/badge/Streamlit-Live_Dashboard-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://karachi-aqi-forecasting-mlops-yh4qpwm7xacy4r6yf4be5e.streamlit.app/)
 
 ---
 
@@ -144,13 +142,9 @@ Users can download forecast results and processed datasets in CSV format for fur
 
 # 🛠️ Local Installation
 
-## 1. Clone Repository
-
-```bash
-git clone https://github.com/alizaykhan-027/karachi-aqi-forecasting-mlops.git
-
-cd Karachi_aqi_forecasting_mlops
-```
+## 1. git clone
+https://github.com/alizaykhan-027/karachi-aqi-forecasting-mlops.git
+cd karachi-aqi-forecasting-mlops
 
 ## 2. Create Virtual Environment
 

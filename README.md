@@ -53,6 +53,7 @@ A scheduled GitHub Actions workflow retrains the forecasting model every 24 hour
 ---
 
 # 📂 Repository Structure
+```text
 
 KARACHI-AQI-FORECASTING-PLATFORM/
 │
@@ -87,6 +88,7 @@ KARACHI-AQI-FORECASTING-PLATFORM/
 ├── .gitignore
 ├── LICENSE
 └── requirements.txt
+```
 # 🚀 Dashboard Features
 
 The production dashboard provides an intuitive interface for monitoring and forecasting urban air quality.

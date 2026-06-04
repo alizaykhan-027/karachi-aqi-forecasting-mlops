@@ -1,4 +1,4 @@
-# 🌦️ SkyCast: Automated MLOps Engine for Multi-Horizon Urban Air Quality Forecasting
+# 🌦️ SkyCast: Automated MLOps Engine for Multi-Horizon Karachi AQI Forecasting
 
 SkyCast is a serverless, production-grade AI system designed to forecast Air Quality Index (AQI) levels for Karachi, Pakistan across 24-hour, 48-hour, and 72-hour future horizons. By combining automated data collection, cloud-based storage, machine learning retraining, and real-time visualization, the platform establishes a complete end-to-end MLOps lifecycle for urban air quality forecasting.
 
@@ -20,20 +20,27 @@ The platform operates through automated cloud-based workflows that continuously 
 [ Historical AQI & Weather Data ]
                  │
                  ▼
-[ Automated Data Collection ]
+[ Automated Data Collection Pipeline ]
                  │
                  ▼
 [ Supabase Cloud Feature Store ]
                  │
                  ▼
-[ Daily Model Retraining ]
+[ Feature Processing & Dataset Builder ]
                  │
                  ▼
-[ Model Serialization ]
+[ Model Training Pipeline ]
                  │
                  ▼
-[ Streamlit Dashboard ]
+[ DagsHub Model Registry (Experiment Tracking & Versioning) ]
+                 │
+                 ▼
+[ Model Serialization (.pkl artifacts) ]
+                 │
+                 ▼
+[ Streamlit Dashboard Deployment ]
 ```
+
 
 ### Automated Data Ingestion
 

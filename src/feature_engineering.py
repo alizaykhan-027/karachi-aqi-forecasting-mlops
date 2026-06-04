@@ -38,7 +38,7 @@ print("Fetching past 120 hours of data from Supabase for feature calculations...
 response = (
     supabase.table("aqi_features")
     .select("*")
-    .order("timestamp", ascending=False)
+    .order("timestamp", desc=True)
     .limit(120)
     .execute()
 )
